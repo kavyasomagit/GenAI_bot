@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMass Lowell Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .chat-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .chat-header img {
+            height: 50px;
+            margin-right: 20px;
+        }
+        .chat-box {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #fafafa;
+        }
+        .chat-input {
+            width: calc(100% - 80px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+        .send-button, .clear-button {
+            padding: 10px 20px;
+            border: none;
+            background: #007BFF;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .clear-button {
+            background: #dc3545;
+        }
+        .typing-indicator {
+            font-style: italic;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRElnqWCfsA9SFR1YzvOHXc-o4tOoGSUADpIA&s" alt="UMass Logo">
+            <h2>UMass Lowell Chatbot</h2>
+        </div>
+        <div class="chat-box" id="chat-box"></div>
+        <div class="typing-indicator" id="typing-indicator"></div>
+        <input type="text" id="chat-input" class="chat-input" placeholder="Type your question..." onkeydown="checkKey(event)">
+        <button class="send-button" onclick="sendMessage()">Send</button>
+        <button class="clear-button" onclick="clearChat()">Clear</button>
+    </div>
+
+    <script>
+        const input = document.getElementById('chat-input');
+        const chatBox = document.getElementById('chat-box');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        async function sendMessage() {
+            const message = input.value;
+            if (!message) return;
+
+            const userMessage = document.createElement('div');
+            userMessage.innerHTML = `<b>You:</b> ${message}`;
+            userMessage.style.backgroundColor = '#e7f9eb'; 
+            // userMessage.style.paddingLeft = '10px'
+            userMessage.style.borderRadius = '15px'
+            userMessage.style.marginBottom = '20px'
+            userMessage.style.marginTop = '20px'
+            userMessage.style.marginLeft = '50px'
+            userMessage.style.padding = '5px 5px 5px 5px'
+            chatBox.appendChild(userMessage);
+            input.value = '';
+            typingIndicator.textContent = 'Typing...';
+
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query: message })
+            });
+
+            const result = await response.json();
+            const botMessage = document.createElement('div');
+            botMessage.innerHTML = `<b>Bot:</b> ${result.response}`;
+            botMessage.style.backgroundColor = '#dff6ff'; 
+            botMessage.style.borderRadius = '15px'
+            botMessage.style.paddingLeft = '10px'
+            botMessage.style.marginRight = '50px'
+            chatBox.appendChild(botMessage);
+            typingIndicator.textContent = '';
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function checkKey(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            } else {
+                typingIndicator.textContent = 'You are typing...';
+            }
+        }
+
+        function clearChat() {
+            chatBox.innerHTML = '';
+            typingIndicator.textContent = '';
+        }
+    </script>
+</body>
+</html>
